@@ -5,81 +5,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>A.U.R.A. - Research Portal</title>
     <style>
-        /* Modern Web Font */
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
-
-        body { 
-            font-family: 'Poppins', sans-serif; 
-            margin: 0; 
-            background-color: #eef2f5; 
-            color: #333;
-        }
-
-        /* Sleek Navigation Bar */
-        .navbar {
-            background-color: #004080;
-            color: white;
-            padding: 15px 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0px 4px 6px rgba(0,0,0,0.1);
-        }
+        body { font-family: 'Poppins', sans-serif; margin: 0; background-color: #eef2f5; color: #333; }
+        .navbar { background-color: #004080; color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0px 4px 6px rgba(0,0,0,0.1); }
         .navbar h2 { margin: 0; font-size: 22px; letter-spacing: 1px; }
         .navbar span { font-size: 14px; opacity: 0.9; }
-
-        /* Main Content Container */
-        .container { 
-            background: white; 
-            padding: 50px; 
-            border-radius: 12px; 
-            box-shadow: 0px 10px 20px rgba(0,0,0,0.05); 
-            width: 650px; 
-            margin: 60px auto; /* Centers the box */
-            text-align: center;
-        }
-
+        .container { background: white; padding: 50px; border-radius: 12px; box-shadow: 0px 10px 20px rgba(0,0,0,0.05); width: 650px; margin: 60px auto; text-align: center; }
         h1 { color: #004080; margin-bottom: 10px; }
         
-        input { 
-            width: 70%; 
-            padding: 12px; 
-            border: 2px solid #ddd; 
-            border-radius: 8px; 
-            font-size: 16px; 
-            outline: none;
-            transition: border-color 0.3s;
-        }
+        input { width: 70%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px; outline: none; transition: border-color 0.3s; margin-bottom: 15px; }
         input:focus { border-color: #004080; }
-
-        button { 
-            padding: 12px 25px; 
-            background-color: #004080; 
-            color: white; 
-            border: none; 
-            border-radius: 8px; 
-            cursor: pointer; 
-            font-size: 16px; 
-            margin-left: 10px; 
-            font-weight: 600;
-            transition: background 0.3s;
-        }
-        button:hover { background-color: #00264d; }
-
-        .login-btn { 
-            background-color: #28a745; 
-            margin-top: 25px; 
-            font-size: 18px; 
-            padding: 15px 40px;
-        }
-        .login-btn:hover { background-color: #1e7e34; }
         
-        /* Results Area styling */
+        button { padding: 12px 25px; background-color: #004080; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; margin: 5px; font-weight: 600; transition: background 0.3s; }
+        button:hover { background-color: #00264d; }
+        .login-btn { background-color: #28a745; }
+        .login-btn:hover { background-color: #1e7e34; }
+        .signup-btn { background-color: #6c757d; }
+        .signup-btn:hover { background-color: #5a6268; }
+        
         #results { margin-top: 30px; text-align: left; background: #fdfdfd; padding: 25px; border-radius: 8px; border: 1px solid #eee; }
         .paper-title { font-weight: 600; color: #004080; text-decoration: none; font-size: 18px; }
         .paper-title:hover { text-decoration: underline; }
         .paper-item { margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #eee; }
-
         .hidden { display: none; }
     </style>
 </head>
@@ -95,34 +42,116 @@
         <p style="color: #666; margin-bottom: 30px;">Access thousands of open-source academic papers instantly.</p>
         
         <div id="loginSection">
-            <button class="login-btn" onclick="loginWithCollegeId()">Verify College Mail ID</button>
+            <h3 style="color: #444;">Student Login / Registration</h3>
+            <input type="email" id="emailInput" placeholder="College Email (e.g., student@college.ac.in)"><br>
+            <input type="password" id="passwordInput" placeholder="Create or Enter Password"><br>
+            <button id="loginBtn" class="login-btn">Login</button>
+            <button id="signupBtn" class="signup-btn">Create Account</button>
+            <p id="authMessage" style="font-weight: 600; margin-top: 15px;"></p>
         </div>
 
         <div id="searchSection" class="hidden">
-            <h3 style="color: #28a745; margin-bottom: 20px;">✓ Student Verified</h3>
+            <h3 style="color: #28a745; margin-bottom: 20px;">✓ Student Authenticated</h3>
             <input type="text" id="searchInput" placeholder="Search topics, authors, or keywords...">
-            <button onclick="searchPapers()">Search</button>
+            <button id="searchBtn">Search</button>
+            <button id="logoutBtn" style="background-color: #dc3545;">Logout</button>
             <div id="results"></div>
         </div>
-
     </div>
 
-    <script>
-        function loginWithCollegeId() {
-            let email = prompt("Please enter your college email ID:");
-            if (email === null || email === "") return; 
-            email = email.toLowerCase();
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
-            // Checking for valid academic email extensions
-            if (email.endsWith(".ac.in") || email.endsWith(".edu")) {
-                document.getElementById("loginSection").classList.add("hidden");
-                document.getElementById("searchSection").classList.remove("hidden");
-            } else {
-                alert("Access Denied: Please use a valid college email ID.");
-            }
+        // I added your exact keys from your screenshot here!
+        const firebaseConfig = {
+            apiKey: "AIzaSyDFljzGlzC_eGLids8BI6bVUqaVU7JspDo",
+            authDomain: "aura-portal-79235.firebaseapp.com",
+            projectId: "aura-portal-79235",
+            storageBucket: "aura-portal-79235.firebasestorage.app",
+            messagingSenderId: "328759327139",
+            appId: "1:328759327139:web:7479a0e8d53b54f00dc216"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        const emailInput = document.getElementById("emailInput");
+        const passwordInput = document.getElementById("passwordInput");
+        const authMessage = document.getElementById("authMessage");
+        const loginSection = document.getElementById("loginSection");
+        const searchSection = document.getElementById("searchSection");
+
+        function isValidCollegeEmail(email) {
+            return email.endsWith(".ac.in") || email.endsWith(".edu");
         }
 
-        async function searchPapers() {
+        // SIGN UP FUNCTION
+        document.getElementById("signupBtn").addEventListener("click", () => {
+            const email = emailInput.value.toLowerCase().trim();
+            const password = passwordInput.value;
+
+            if (!isValidCollegeEmail(email)) {
+                authMessage.style.color = "red";
+                authMessage.innerText = "Error: You must use a valid .ac.in or .edu email address to register.";
+                return;
+            }
+
+            authMessage.style.color = "blue";
+            authMessage.innerText = "Creating account...";
+
+            createUserWithEmailAndPassword(auth, email, password)
+                .then((userCredential) => {
+                    authMessage.style.color = "green";
+                    authMessage.innerText = "Account created successfully! Unlocking database...";
+                    setTimeout(() => {
+                        loginSection.classList.add("hidden");
+                        searchSection.classList.remove("hidden");
+                    }, 1500);
+                })
+                .catch((error) => {
+                    authMessage.style.color = "red";
+                    authMessage.innerText = "Error: " + error.message;
+                });
+        });
+
+        // LOGIN FUNCTION
+        document.getElementById("loginBtn").addEventListener("click", () => {
+            const email = emailInput.value.toLowerCase().trim();
+            const password = passwordInput.value;
+
+            authMessage.style.color = "blue";
+            authMessage.innerText = "Logging in...";
+
+            signInWithEmailAndPassword(auth, email, password)
+                .then((userCredential) => {
+                    authMessage.style.color = "green";
+                    authMessage.innerText = "Login successful! Unlocking database...";
+                    setTimeout(() => {
+                        loginSection.classList.add("hidden");
+                        searchSection.classList.remove("hidden");
+                    }, 1000);
+                })
+                .catch((error) => {
+                    authMessage.style.color = "red";
+                    authMessage.innerText = "Invalid Email or Password.";
+                });
+        });
+
+        // LOGOUT FUNCTION
+        document.getElementById("logoutBtn").addEventListener("click", () => {
+            signOut(auth).then(() => {
+                loginSection.classList.remove("hidden");
+                searchSection.classList.add("hidden");
+                emailInput.value = "";
+                passwordInput.value = "";
+                authMessage.innerText = "";
+                document.getElementById("results").style.display = "none";
+            });
+        });
+
+        // SEARCH API FUNCTION
+        document.getElementById("searchBtn").addEventListener("click", async () => {
             let query = document.getElementById("searchInput").value;
             let resultsDiv = document.getElementById("results");
 
@@ -156,12 +185,10 @@
                     `;
                 });
                 resultsDiv.innerHTML = html;
-
             } catch (error) {
                 resultsDiv.innerHTML = "<p style='color: red;'>Error connecting to the database. Please try again.</p>";
             }
-        }
+        });
     </script>
-
 </body>
 </html>
