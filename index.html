@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A.U.R.A. - Research Portal</title>
+    <style>
+        /* Modern Web Font */
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+        body { 
+            font-family: 'Poppins', sans-serif; 
+            margin: 0; 
+            background-color: #eef2f5; 
+            color: #333;
+        }
+
+        /* Sleek Navigation Bar */
+        .navbar {
+            background-color: #004080;
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0px 4px 6px rgba(0,0,0,0.1);
+        }
+        .navbar h2 { margin: 0; font-size: 22px; letter-spacing: 1px; }
+        .navbar span { font-size: 14px; opacity: 0.9; }
+
+        /* Main Content Container */
+        .container { 
+            background: white; 
+            padding: 50px; 
+            border-radius: 12px; 
+            box-shadow: 0px 10px 20px rgba(0,0,0,0.05); 
+            width: 650px; 
+            margin: 60px auto; /* Centers the box */
+            text-align: center;
+        }
+
+        h1 { color: #004080; margin-bottom: 10px; }
+        
+        input { 
+            width: 70%; 
+            padding: 12px; 
+            border: 2px solid #ddd; 
+            border-radius: 8px; 
+            font-size: 16px; 
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        input:focus { border-color: #004080; }
+
+        button { 
+            padding: 12px 25px; 
+            background-color: #004080; 
+            color: white; 
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-size: 16px; 
+            margin-left: 10px; 
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+        button:hover { background-color: #00264d; }
+
+        .login-btn { 
+            background-color: #28a745; 
+            margin-top: 25px; 
+            font-size: 18px; 
+            padding: 15px 40px;
+        }
+        .login-btn:hover { background-color: #1e7e34; }
+        
+        /* Results Area styling */
+        #results { margin-top: 30px; text-align: left; background: #fdfdfd; padding: 25px; border-radius: 8px; border: 1px solid #eee; }
+        .paper-title { font-weight: 600; color: #004080; text-decoration: none; font-size: 18px; }
+        .paper-title:hover { text-decoration: underline; }
+        .paper-item { margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #eee; }
+
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="navbar">
+        <h2>A.U.R.A.</h2>
+        <span>Academic Universal Research Access</span>
+    </div>
+
+    <div class="container">
+        <h1>A.U.R.A. Portal</h1>
+        <p style="color: #666; margin-bottom: 30px;">Access thousands of open-source academic papers instantly.</p>
+        
+        <div id="loginSection">
+            <button class="login-btn" onclick="loginWithCollegeId()">Verify College Mail ID</button>
+        </div>
+
+        <div id="searchSection" class="hidden">
+            <h3 style="color: #28a745; margin-bottom: 20px;">✓ Student Verified</h3>
+            <input type="text" id="searchInput" placeholder="Search topics, authors, or keywords...">
+            <button onclick="searchPapers()">Search</button>
+            <div id="results"></div>
+        </div>
+
+    </div>
+
+    <script>
+        function loginWithCollegeId() {
+            let email = prompt("Please enter your college email ID:");
+            if (email === null || email === "") return; 
+            email = email.toLowerCase();
+
+            // Checking for valid academic email extensions
+            if (email.endsWith(".ac.in") || email.endsWith(".edu")) {
+                document.getElementById("loginSection").classList.add("hidden");
+                document.getElementById("searchSection").classList.remove("hidden");
+            } else {
+                alert("Access Denied: Please use a valid college email ID.");
+            }
+        }
+
+        async function searchPapers() {
+            let query = document.getElementById("searchInput").value;
+            let resultsDiv = document.getElementById("results");
+
+            if(query.trim() === "") {
+                alert("Please type a topic to search!");
+                return;
+            }
+
+            resultsDiv.style.display = "block";
+            resultsDiv.innerHTML = "<p>Searching global databases...</p>";
+
+            try {
+                let response = await fetch(`https://api.crossref.org/works?query=${encodeURIComponent(query)}&select=title,URL,author&rows=5`);
+                let data = await response.json();
+                let papers = data.message.items;
+
+                if(papers.length === 0) {
+                    resultsDiv.innerHTML = "<p>No papers found for this topic.</p>";
+                    return;
+                }
+
+                let html = "<h3 style='margin-top:0;'>Top Search Results:</h3>";
+                papers.forEach(paper => {
+                    let title = paper.title ? paper.title[0] : "Unknown Title";
+                    let link = paper.URL ? paper.URL : "#";
+                    html += `
+                        <div class="paper-item">
+                            <a href="${link}" target="_blank" class="paper-title">${title}</a>
+                            <br><small><a href="${link}" target="_blank" style="color: #28a745; font-weight: 600;">[ PDF / Read Document ]</a></small>
+                        </div>
+                    `;
+                });
+                resultsDiv.innerHTML = html;
+
+            } catch (error) {
+                resultsDiv.innerHTML = "<p style='color: red;'>Error connecting to the database. Please try again.</p>";
+            }
+        }
+    </script>
+
+</body>
+</html>
