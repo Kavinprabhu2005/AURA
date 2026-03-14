@@ -3,192 +3,497 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>A.U.R.A. - Research Portal</title>
+    <title>A.U.R.A. - Institutional Research Access</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
-        body { font-family: 'Poppins', sans-serif; margin: 0; background-color: #eef2f5; color: #333; }
+        body { font-family: 'Poppins', sans-serif; margin: 0; background-color: #f0f4f8; overflow-x: hidden; display: flex; flex-direction: column; min-height: 100vh;}
+        
+        /* Navbar */
         .navbar { background-color: #004080; color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0px 4px 6px rgba(0,0,0,0.1); }
+        .navbar-brand { display: flex; flex-direction: column; }
         .navbar h2 { margin: 0; font-size: 22px; letter-spacing: 1px; }
-        .navbar span { font-size: 14px; opacity: 0.9; }
-        .container { background: white; padding: 50px; border-radius: 12px; box-shadow: 0px 10px 20px rgba(0,0,0,0.05); width: 650px; margin: 60px auto; text-align: center; }
-        h1 { color: #004080; margin-bottom: 10px; }
+        .navbar .full-form { font-size: 12px; opacity: 0.9; }
+        .nav-status { font-weight: 600; font-size: 14px; background: rgba(255,255,255,0.2); padding: 5px 15px; border-radius: 20px;}
+
+        /* Container */
+        .container { background: white; padding: 40px; border-radius: 15px; width: 600px; margin: 50px auto; text-align: center; box-shadow: 0px 10px 30px rgba(0,0,0,0.1); transition: 0.3s; flex: 1;}
+        .login-container { width: 400px; } 
+        h1 { color: #004080; margin-bottom: 20px; }
         
-        input { width: 70%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px; outline: none; transition: border-color 0.3s; margin-bottom: 15px; }
-        input:focus { border-color: #004080; }
+        /* Inputs & Buttons */
+        input, select { width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; outline: none; transition: 0.3s; font-family: 'Poppins';}
+        input:focus, select:focus { border-color: #004080; }
+        button { padding: 12px 25px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; margin: 5px; transition: 0.3s; font-family: 'Poppins'; }
         
-        button { padding: 12px 25px; background-color: #004080; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; margin: 5px; font-weight: 600; transition: background 0.3s; }
-        button:hover { background-color: #00264d; }
-        .login-btn { background-color: #28a745; }
-        .login-btn:hover { background-color: #1e7e34; }
-        .signup-btn { background-color: #6c757d; }
-        .signup-btn:hover { background-color: #5a6268; }
+        .search-btn { background: #004080; color: white; width: 100%; font-size: 16px; margin-top: 10px;}
+        .logout-btn { background: #dc3545; color: white; margin-top: 20px; }
+        .back-btn { background: #6c757d; color: white; margin-bottom: 20px; font-size: 14px; padding: 8px 15px;}
+        .action-btn { background: #28a745; color: white; width: 100%; font-size: 16px; margin-top: 10px; }
+        .load-more-btn { background: #17a2b8; color: white; width: 100%; font-size: 16px; margin-top: 15px; }
+        .library-btn { background: #ffc107; color: #333; width: 100%; font-size: 16px; margin-top: 10px; }
         
-        #results { margin-top: 30px; text-align: left; background: #fdfdfd; padding: 25px; border-radius: 8px; border: 1px solid #eee; }
-        .paper-title { font-weight: 600; color: #004080; text-decoration: none; font-size: 18px; }
-        .paper-title:hover { text-decoration: underline; }
-        .paper-item { margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #eee; }
-        .hidden { display: none; }
+        .hidden { display: none !important; }
+
+        /* Tabs */
+        .tabs { display: flex; background: #e0e7ff; border-radius: 8px; margin-bottom: 20px; overflow: hidden; position: relative;}
+        .tab { flex: 1; padding: 12px; border: none; background: transparent; color: #555; cursor: pointer; font-weight: bold; transition: 0.3s; margin: 0;}
+        .tab.active-tab { background: #004080; color: white; animation: glow 2s infinite alternate; z-index: 1;}
+        @keyframes glow { 0% { box-shadow: 0 0 5px rgba(0, 64, 128, 0.4); } 100% { box-shadow: 0 0 15px rgba(0, 64, 128, 0.9); } }
+
+        .signup-fields { max-height: 0; opacity: 0; overflow: hidden; transition: max-height 0.4s ease, opacity 0.4s ease; }
+        .show-fields { max-height: 300px; opacity: 1; overflow: visible;}
+
+        .search-row { display: flex; gap: 10px; margin-bottom: 10px; }
+        .search-row input { flex: 2; margin-bottom: 0; }
+        .search-row select { flex: 1; margin-bottom: 0; }
+        .year-inputs { flex: 1; display: flex; gap: 10px; }
+        .year-inputs input { flex: 1; margin-bottom: 0; }
+
+        /* Results */
+        #results, #libraryResults { margin-top: 20px; text-align: left; max-height: 500px; overflow-y: auto; padding-right: 10px; }
+        .paper-item { background: #fff; border: 1px solid #eee; padding: 15px; margin-bottom: 10px; border-radius: 8px; cursor: pointer; transition: 0.2s; text-align: left;}
+        .paper-item:hover { border-color: #004080; background: #f9fbff; transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.05);}
+        .paper-title { color: #004080; font-weight: 600; display: block; font-size: 16px; margin-bottom: 8px;}
+        .badge { background: #e0e7ff; color: #004080; padding: 3px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; margin-right: 10px;}
+        .abstract-preview { font-size: 13px; color: #555; margin-top: 10px; font-style: italic; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+        /* Reference Box */
+        .ref-box { text-align: left; background: #f8f9fa; padding: 20px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 20px; line-height: 1.6;}
+        .ref-title { font-size: 20px; color: #004080; font-weight: bold; margin-bottom: 10px;}
+        .ref-meta { font-size: 14px; color: #555; margin-bottom: 15px;}
+        .ref-abstract { font-size: 14px; color: #333; background: #fff; padding: 15px; border-left: 4px solid #004080; margin-top: 15px; max-height: 250px; overflow-y: auto;}
+        
+        /* Actions Box */
+        .actions-box { margin-top: 15px; background: #e0e7ff; padding: 15px; border-radius: 5px; display: flex; flex-direction: column; gap: 10px; border: 1px solid #c7d2fe; }
+        .doi-row { display: flex; justify-content: space-between; align-items: center; width: 100%;}
+        .doi-text { font-size: 14px; color: #004080; word-break: break-all; margin-right: 10px; }
+        .btn-group { display: flex; gap: 5px; }
+        .copy-btn { background: #004080; color: white; padding: 6px 12px; font-size: 12px; margin: 0; white-space: nowrap; }
+        .copy-btn:hover { background: #28a745; }
+        .cite-btn { background: #6f42c1; color: white; padding: 6px 12px; font-size: 12px; margin: 0; white-space: nowrap; }
+        .cite-btn:hover { background: #59369c; }
+
+        /* PORTFOLIO FOOTER */
+        .developer-footer { text-align: center; padding: 20px; margin-top: auto; font-size: 14px; color: #555; }
+        .developer-footer a { color: #004080; font-weight: 600; text-decoration: none; transition: 0.3s; padding: 5px 10px; border-radius: 5px; }
+        .developer-footer a:hover { background: #e0e7ff; color: #00264d; }
     </style>
 </head>
 <body>
 
     <div class="navbar">
-        <h2>A.U.R.A.</h2>
-        <span>Academic Universal Research Access</span>
+        <div class="navbar-brand">
+            <h2>A.U.R.A.</h2>
+            <span class="full-form">Academic Universal Research Access</span>
+        </div>
+        <span id="navStatus" class="nav-status">Authenticating...</span>
     </div>
 
-    <div class="container">
+    <div class="container login-container" id="screen1-login">
         <h1>A.U.R.A. Portal</h1>
-        <p style="color: #666; margin-bottom: 30px;">Access thousands of open-source academic papers instantly.</p>
+        <div class="tabs">
+            <button id="tab-login" class="tab active-tab">Login</button>
+            <button id="tab-signup" class="tab">Create Account</button>
+        </div>
+        <div id="signup-fields" class="signup-fields">
+            <input type="text" id="nameInput" placeholder="Full Name">
+            <select id="deptInput">
+                <option value="">Select Department</option>
+                <option value="IT">IT</option>
+                <option value="CSE">CSE</option>
+                <option value="ECE">ECE</option>
+                <option value="BME">Biomedical Engineering</option>
+                <option value="Others">Others</option>
+            </select>
+            <input type="text" id="otherDeptInput" class="hidden" placeholder="Please specify your department">
+        </div>
+        <input type="email" id="emailInput" placeholder="College Email">
+        <input type="password" id="passwordInput" placeholder="Password">
+        <button id="actionBtn" class="action-btn">Secure Login</button>
+    </div>
+
+    <div class="container hidden" id="screen2-search">
+        <h1>Research Dashboard</h1>
+        <h3 id="welcomeMsg" style="color: #28a745; margin-bottom: 5px;">Welcome!</h3>
+        <p id="deptMsg" style="color: #666; font-size: 14px; margin-bottom: 20px;"></p>
         
-        <div id="loginSection">
-            <h3 style="color: #444;">Student Login / Registration</h3>
-            <input type="email" id="emailInput" placeholder="College Email (e.g., student@college.ac.in)"><br>
-            <input type="password" id="passwordInput" placeholder="Create or Enter Password"><br>
-            <button id="loginBtn" class="login-btn">Login</button>
-            <button id="signupBtn" class="signup-btn">Create Account</button>
-            <p id="authMessage" style="font-weight: 600; margin-top: 15px;"></p>
+        <button id="openLibraryBtn" class="library-btn">📚 View My Saved Papers</button>
+        <hr style="margin: 20px 0; border: 1px solid #eee;">
+
+        <div class="search-row">
+            <input type="text" id="searchInput" placeholder="Enter keywords (e.g., AI in Healthcare)">
+            <select id="docType">
+                <option value="">All Types</option>
+                <option value="journal-article">Journal Article</option>
+                <option value="proceedings-article">Research Paper</option>
+            </select>
+        </div>
+        
+        <div class="search-row">
+            <div class="year-inputs" style="flex: 2;">
+                <input type="number" id="yearFrom" placeholder="From Year" min="1990" max="2026">
+                <input type="number" id="yearTo" placeholder="To Year" min="1990" max="2026">
+            </div>
+            <div style="flex: 1;"></div>
         </div>
 
-        <div id="searchSection" class="hidden">
-            <h3 style="color: #28a745; margin-bottom: 20px;">✓ Student Authenticated</h3>
-            <input type="text" id="searchInput" placeholder="Search topics, authors, or keywords...">
-            <button id="searchBtn">Search</button>
-            <button id="logoutBtn" style="background-color: #dc3545;">Logout</button>
-            <div id="results"></div>
-        </div>
+        <button id="searchBtn" class="search-btn">Search Database</button>
+        <button id="logoutBtn" class="logout-btn">Logout</button>
     </div>
+
+    <div class="container hidden" id="screen3-results" style="width: 800px;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h2 style="color: #004080; margin: 0;">Search Results</h2>
+            <button id="backToSearchBtn" class="back-btn">⬅ Back to Dashboard</button>
+        </div>
+        <div id="results"></div>
+        <button id="loadMoreBtn" class="load-more-btn hidden">⬇ Load More Papers</button>
+    </div>
+
+    <div class="container hidden" id="screen4-details" style="width: 800px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <h2 style="color: #004080; margin: 0;">Paper Reference</h2>
+            <button id="backToResultsBtn" class="back-btn">⬅ Back</button>
+        </div>
+        
+        <div class="ref-box">
+            <div class="ref-title" id="ref-title">Paper Title</div>
+            <div class="ref-meta" id="ref-authors"><b>Authors:</b> Loading...</div>
+            <div class="ref-meta" id="ref-pub"><b>Publisher:</b> Loading... | <b>Year:</b> Loading...</div>
+            <div class="ref-abstract">
+                <b style="color:#004080;">Abstract / Summary:</b><br><br>
+                <span id="ref-abstract-text" style="line-height: 1.8;">Loading...</span>
+            </div>
+            
+            <div class="actions-box">
+                <div class="doi-row">
+                    <div class="doi-text"><b>DOI:</b> <span id="ref-doi">Loading...</span></div>
+                    <div class="btn-group">
+                        <button id="copyDoiBtn" class="copy-btn">📋 DOI</button>
+                        <button id="copyCiteBtn" class="cite-btn">📝 IEEE Cite</button>
+                    </div>
+                </div>
+                <button id="savePaperBtn" class="library-btn" style="margin-top: 5px; padding: 8px;">⭐ Save to My Library</button>
+            </div>
+        </div>
+
+        <div id="download-section"></div>
+    </div>
+
+    <div class="container hidden" id="screen5-library" style="width: 800px;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h2 style="color: #ffc107; margin: 0; text-shadow: 1px 1px 2px rgba(0,0,0,0.1);">📚 My Saved Library</h2>
+            <button id="backFromLibraryBtn" class="back-btn">⬅ Back to Dashboard</button>
+        </div>
+        <p style="text-align: left; color: #666; margin-top: 5px;">Papers you saved for future reference.</p>
+        <div id="libraryResults"></div>
+    </div>
+
+    <footer class="developer-footer">
+        Designed & Developed by <a href="https://kavinprabhuportfolio.netlify.app/" target="_blank">Kavin Prabhu | Portfolio</a>
+    </footer>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, collection, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-        // I added your exact keys from your screenshot here!
         const firebaseConfig = {
-            apiKey: "AIzaSyDFljzGlzC_eGLids8BI6bVUqaVU7JspDo",
-            authDomain: "aura-portal-79235.firebaseapp.com",
-            projectId: "aura-portal-79235",
-            storageBucket: "aura-portal-79235.firebasestorage.app",
-            messagingSenderId: "328759327139",
-            appId: "1:328759327139:web:7479a0e8d53b54f00dc216"
-        };
+  apiKey: "AIzaSyDFljzGlzC_eGLids8BI6bVUqaVU7JspDo",
+  authDomain: "aura-portal-79235.firebaseapp.com",
+  projectId: "aura-portal-79235",
+  storageBucket: "aura-portal-79235.firebasestorage.app",
+  messagingSenderId: "328759327139",
+  appId: "1:328759327139:web:7479a0e8d53b54f80dc216"
+};
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
+        const db = getFirestore(app);
+        
+        setPersistence(auth, browserLocalPersistence);
 
-        const emailInput = document.getElementById("emailInput");
-        const passwordInput = document.getElementById("passwordInput");
-        const authMessage = document.getElementById("authMessage");
-        const loginSection = document.getElementById("loginSection");
-        const searchSection = document.getElementById("searchSection");
+        let currentUser = null; 
+        let currentPaperData = null;
 
-        function isValidCollegeEmail(email) {
-            return email.endsWith(".ac.in") || email.endsWith(".edu");
+        const screens = {
+            s1: document.getElementById("screen1-login"),
+            s2: document.getElementById("screen2-search"),
+            s3: document.getElementById("screen3-results"),
+            s4: document.getElementById("screen4-details"),
+            s5: document.getElementById("screen5-library")
+        };
+
+        function showScreen(screenId) {
+            Object.values(screens).forEach(s => s.classList.add("hidden"));
+            screens[screenId].classList.remove("hidden");
         }
 
-        // SIGN UP FUNCTION
-        document.getElementById("signupBtn").addEventListener("click", () => {
-            const email = emailInput.value.toLowerCase().trim();
-            const password = passwordInput.value;
-
-            if (!isValidCollegeEmail(email)) {
-                authMessage.style.color = "red";
-                authMessage.innerText = "Error: You must use a valid .ac.in or .edu email address to register.";
-                return;
+        onAuthStateChanged(auth, async (user) => {
+            const navStatus = document.getElementById("navStatus");
+            if (user) {
+                currentUser = user;
+                navStatus.innerText = "Online - Secure Access";
+                
+                try {
+                    const snap = await getDoc(doc(db, "students", user.uid));
+                    if(snap.exists()){
+                        document.getElementById("welcomeMsg").innerText = `Welcome, ${snap.data().name}!`;
+                        document.getElementById("deptMsg").innerText = `Department: ${snap.data().department}`;
+                    }
+                } catch(err) { console.error("Error fetching user data:", err); }
+                
+                showScreen('s2');
+            } else {
+                currentUser = null;
+                navStatus.innerText = "Guest Mode";
+                showScreen('s1');
             }
-
-            authMessage.style.color = "blue";
-            authMessage.innerText = "Creating account...";
-
-            createUserWithEmailAndPassword(auth, email, password)
-                .then((userCredential) => {
-                    authMessage.style.color = "green";
-                    authMessage.innerText = "Account created successfully! Unlocking database...";
-                    setTimeout(() => {
-                        loginSection.classList.add("hidden");
-                        searchSection.classList.remove("hidden");
-                    }, 1500);
-                })
-                .catch((error) => {
-                    authMessage.style.color = "red";
-                    authMessage.innerText = "Error: " + error.message;
-                });
         });
 
-        // LOGIN FUNCTION
-        document.getElementById("loginBtn").addEventListener("click", () => {
-            const email = emailInput.value.toLowerCase().trim();
-            const password = passwordInput.value;
+        document.getElementById("backToSearchBtn").onclick = () => showScreen('s2');
+        document.getElementById("backToResultsBtn").onclick = () => showScreen('s3');
+        document.getElementById("openLibraryBtn").onclick = () => { showScreen('s5'); loadSavedPapers(); };
+        document.getElementById("backFromLibraryBtn").onclick = () => showScreen('s2');
+        document.getElementById("logoutBtn").onclick = () => signOut(auth);
 
-            authMessage.style.color = "blue";
-            authMessage.innerText = "Logging in...";
+        let isLoginMode = true;
+        const actionBtn = document.getElementById("actionBtn");
+        document.getElementById("tab-login").onclick = () => { isLoginMode = true; updateTabs(); };
+        document.getElementById("tab-signup").onclick = () => { isLoginMode = false; updateTabs(); };
+        
+        function updateTabs() {
+            document.getElementById("tab-login").classList.toggle("active-tab", isLoginMode);
+            document.getElementById("tab-signup").classList.toggle("active-tab", !isLoginMode);
+            document.getElementById("signup-fields").classList.toggle("show-fields", !isLoginMode);
+            actionBtn.innerText = isLoginMode ? "Secure Login" : "Create Student Account";
+            actionBtn.style.background = isLoginMode ? "#28a745" : "#004080";
+        }
 
-            signInWithEmailAndPassword(auth, email, password)
-                .then((userCredential) => {
-                    authMessage.style.color = "green";
-                    authMessage.innerText = "Login successful! Unlocking database...";
-                    setTimeout(() => {
-                        loginSection.classList.add("hidden");
-                        searchSection.classList.remove("hidden");
-                    }, 1000);
-                })
-                .catch((error) => {
-                    authMessage.style.color = "red";
-                    authMessage.innerText = "Invalid Email or Password.";
-                });
+        document.getElementById("deptInput").addEventListener("change", function() {
+            document.getElementById("otherDeptInput").classList.toggle("hidden", this.value !== "Others");
         });
 
-        // LOGOUT FUNCTION
-        document.getElementById("logoutBtn").addEventListener("click", () => {
-            signOut(auth).then(() => {
-                loginSection.classList.remove("hidden");
-                searchSection.classList.add("hidden");
-                emailInput.value = "";
-                passwordInput.value = "";
-                authMessage.innerText = "";
-                document.getElementById("results").style.display = "none";
-            });
-        });
-
-        // SEARCH API FUNCTION
-        document.getElementById("searchBtn").addEventListener("click", async () => {
-            let query = document.getElementById("searchInput").value;
-            let resultsDiv = document.getElementById("results");
-
-            if(query.trim() === "") {
-                alert("Please type a topic to search!");
-                return;
+        actionBtn.onclick = async () => {
+            const email = document.getElementById("emailInput").value.trim();
+            const password = document.getElementById("passwordInput").value;
+            if (isLoginMode) {
+                try { await signInWithEmailAndPassword(auth, email, password); } 
+                catch (e) { alert("Login Failed! Incorrect email or password."); }
+            } else {
+                const name = document.getElementById("nameInput").value;
+                let dept = document.getElementById("deptInput").value;
+                if (dept === "Others") dept = document.getElementById("otherDeptInput").value.trim();
+                if(!name || !dept || !email || !password) return alert("Fill all details!");
+                try {
+                    const cred = await createUserWithEmailAndPassword(auth, email, password);
+                    await setDoc(doc(db, "students", cred.user.uid), { name, department: dept, email });
+                } catch (e) { alert(e.message); }
             }
+        };
 
-            resultsDiv.style.display = "block";
-            resultsDiv.innerHTML = "<p>Searching global databases...</p>";
+        function cleanAbstractText(rawText) {
+            if (!rawText) return ""; 
+            return rawText.replace(/<\/?[^>]+(>|$)/g, "").trim();
+        }
+
+        function generateIEEECitation(paper) {
+            let authorStr = "Author unknown";
+            if (paper.author && paper.author.length > 0) {
+                let firstAuthor = paper.author[0];
+                authorStr = `${firstAuthor.given ? firstAuthor.given[0] + '.' : ''} ${firstAuthor.family || ''}`;
+                if (paper.author.length > 1) authorStr += " et al.";
+            }
+            let title = paper.title ? paper.title[0] : "Untitled";
+            let pub = paper.publisher || "Unknown Publisher";
+            let year = paper.created ? paper.created['date-parts'][0][0] : "N/A";
+            let doi = paper.DOI ? `DOI: ${paper.DOI}` : "";
+            
+            return `${authorStr}, "${title}," ${pub}, ${year}. ${doi}`;
+        }
+
+        let currentOffset = 0;
+        let currentApiBaseUrl = "";
+
+        async function fetchAndDisplayPapers(isLoadMore = false) {
+            let resDiv = document.getElementById("results");
+            let loadMoreBtn = document.getElementById("loadMoreBtn");
+            if(!isLoadMore) { resDiv.innerHTML = "<h3>Searching Database...</h3>"; loadMoreBtn.classList.add("hidden"); }
 
             try {
-                let response = await fetch(`https://api.crossref.org/works?query=${encodeURIComponent(query)}&select=title,URL,author&rows=5`);
-                let data = await response.json();
-                let papers = data.message.items;
+                let resp = await fetch(`${currentApiBaseUrl}&rows=50&offset=${currentOffset}`);
+                let data = await resp.json();
+                if(!isLoadMore) resDiv.innerHTML = ""; 
 
-                if(papers.length === 0) {
-                    resultsDiv.innerHTML = "<p>No papers found for this topic.</p>";
+                if(data.message.items.length === 0) {
+                    if(!isLoadMore) resDiv.innerHTML = "<h3 style='color:red;'>No papers found.</h3>";
                     return;
                 }
 
-                let html = "<h3 style='margin-top:0;'>Top Search Results:</h3>";
-                papers.forEach(paper => {
-                    let title = paper.title ? paper.title[0] : "Unknown Title";
-                    let link = paper.URL ? paper.URL : "#";
-                    html += `
-                        <div class="paper-item">
-                            <a href="${link}" target="_blank" class="paper-title">${title}</a>
-                            <br><small><a href="${link}" target="_blank" style="color: #28a745; font-weight: 600;">[ PDF / Read Document ]</a></small>
-                        </div>
+                data.message.items.forEach(paper => {
+                    let item = document.createElement('div');
+                    item.className = 'paper-item';
+                    let title = paper.title ? paper.title[0] : "Untitled Document";
+                    let year = paper.created ? paper.created['date-parts'][0][0] : "N/A";
+                    let cleanAbs = cleanAbstractText(paper.abstract);
+
+                    item.innerHTML = `
+                        <span class="paper-title">${title}</span>
+                        <div><span class="badge" style="background:#f1f3f5; color:#333;">Year: ${year}</span>
+                        <small style="color:#666;">Publisher: ${paper.publisher || 'Unknown'}</small></div>
+                        <div class="abstract-preview">${cleanAbs || 'Click to view details...'}</div>
                     `;
+                    item.onclick = () => openPaperDetails(paper, cleanAbs, title, year);
+                    resDiv.appendChild(item);
                 });
-                resultsDiv.innerHTML = html;
-            } catch (error) {
-                resultsDiv.innerHTML = "<p style='color: red;'>Error connecting to the database. Please try again.</p>";
+
+                if(data.message.items.length === 50) {
+                    loadMoreBtn.classList.remove("hidden");
+                    loadMoreBtn.innerText = "⬇ Load More Papers";
+                    loadMoreBtn.disabled = false;
+                }
+            } catch (e) { resDiv.innerHTML += "<h3 style='color:red;'>Search failed.</h3>"; }
+        }
+
+        function openPaperDetails(paper, cleanAbs, title, year) {
+            showScreen('s4');
+            currentPaperData = paper; 
+
+            let authors = "Authors not listed";
+            if(paper.author) authors = paper.author.map(a => `${a.given || ''} ${a.family || ''}`).join(', ');
+
+            document.getElementById("ref-title").innerText = title;
+            document.getElementById("ref-authors").innerHTML = `<b>Authors:</b> ${authors}`;
+            document.getElementById("ref-pub").innerHTML = `<b>Publisher:</b> ${paper.publisher || 'N/A'} | <b>Year:</b> ${year}`;
+            
+            let doiVal = paper.DOI || "N/A";
+            document.getElementById("ref-doi").innerText = doiVal;
+
+            if (cleanAbs) {
+                document.getElementById("ref-abstract-text").innerHTML = cleanAbs;
+            } else if (doiVal !== "N/A") {
+                document.getElementById("ref-abstract-text").innerHTML = "<i>Fetching abstract... ⏳</i>";
+                fetch(`https://api.semanticscholar.org/graph/v1/paper/DOI:${doiVal}?fields=abstract`)
+                .then(res => res.json())
+                .then(sData => { document.getElementById("ref-abstract-text").innerHTML = sData.abstract || "Abstract strictly locked."; })
+                .catch(() => { document.getElementById("ref-abstract-text").innerHTML = "Abstract strictly locked."; });
+            } else {
+                document.getElementById("ref-abstract-text").innerHTML = "Abstract strictly locked.";
             }
-        });
+            
+            document.getElementById("copyDoiBtn").onclick = () => {
+                if(doiVal !== "N/A") {
+                    navigator.clipboard.writeText(doiVal);
+                    alert("DOI Copied!");
+                }
+            };
+
+            document.getElementById("copyCiteBtn").onclick = () => {
+                let citation = generateIEEECitation(paper);
+                navigator.clipboard.writeText(citation);
+                alert("IEEE Citation Copied to Clipboard!");
+            };
+
+            document.getElementById("savePaperBtn").onclick = async () => {
+                if(!currentUser) return alert("Please login first.");
+                try {
+                    let safeDocId = doiVal !== "N/A" ? doiVal.replace(/\//g, '_') : Date.now().toString();
+                    await setDoc(doc(db, "students", currentUser.uid, "saved_papers", safeDocId), {
+                        title: title,
+                        doi: doiVal,
+                        year: year,
+                        publisher: paper.publisher || "N/A",
+                        savedAt: new Date()
+                    });
+                    alert("⭐ Paper Saved to My Library!");
+                } catch (e) { alert("Failed to save paper."); console.error(e); }
+            };
+
+            const dlSection = document.getElementById("download-section");
+            dlSection.innerHTML = `<button id="startDownloadBtn" class="action-btn" style="background:#28a745; width: 50%; margin: 0 auto; display: block;">⬇ Secure Download PDF</button>`;
+
+            document.getElementById("startDownloadBtn").onclick = () => {
+                let sec = 5;
+                dlSection.innerHTML = `<div style="padding:20px; border:2px solid #28a745; border-radius:10px; text-align:center;">
+                    <h3 style="color:#28a745;">Authenticating...</h3><h1 id="tm" style="font-size:40px; color:#28a745;">5</h1></div>`;
+                let itv = setInterval(() => {
+                    sec--; document.getElementById("tm").innerText = sec;
+                    if(sec <= 0) {
+                        clearInterval(itv);
+                        if(paper.URL) window.open(paper.URL, "_blank"); 
+                        else alert("Direct link unavailable.");
+                        dlSection.innerHTML = `<h4 style='color:#004080; text-align:center;'>Opened securely! ✅</h4>`;
+                    }
+                }, 1000);
+            };
+        }
+
+        document.getElementById("searchBtn").onclick = () => {
+            let query = document.getElementById("searchInput").value;
+            let docType = document.getElementById("docType").value;
+            let yearFrom = document.getElementById("yearFrom").value;
+            let yearTo = document.getElementById("yearTo").value;
+            if(!query) return alert("Enter keyword.");
+            
+            showScreen('s3');
+            currentApiBaseUrl = `https://api.crossref.org/works?query=${encodeURIComponent(query)}`;
+            let filters = [];
+            if(docType) filters.push(`type:${docType}`);
+            if(yearFrom && yearTo) filters.push(`from-pub-date:${yearFrom},until-pub-date:${yearTo}`);
+            else if(yearFrom) filters.push(`from-pub-date:${yearFrom}`);
+            else if(yearTo) filters.push(`until-pub-date:${yearTo}`);
+            if(filters.length > 0) currentApiBaseUrl += `&filter=${filters.join(',')}`;
+
+            currentOffset = 0; fetchAndDisplayPapers(false);
+        };
+
+        document.getElementById("loadMoreBtn").onclick = () => { currentOffset += 50; fetchAndDisplayPapers(true); };
+
+        async function loadSavedPapers() {
+            let libDiv = document.getElementById("libraryResults");
+            libDiv.innerHTML = "Fetching your library...";
+            
+            if(!currentUser) {
+                libDiv.innerHTML = "<p style='color:red;'>Session expired. Please reload and login again.</p>";
+                return;
+            }
+            
+            try {
+                const userLibraryPath = `students/${currentUser.uid}/saved_papers`;
+                const querySnapshot = await getDocs(collection(db, userLibraryPath));
+                
+                if(querySnapshot.empty) {
+                    libDiv.innerHTML = "<p style='color:#555; text-align:center; margin-top:30px;'>Your library is empty. Go search and save some papers! 📚</p>";
+                    return;
+                }
+                
+                libDiv.innerHTML = "";
+                querySnapshot.forEach((docSnap) => {
+                    let data = docSnap.data();
+                    let item = document.createElement('div');
+                    item.className = 'paper-item';
+                    
+                    item.innerHTML = `
+                        <span class="paper-title">${data.title}</span>
+                        <div><span class="badge" style="background:#f1f3f5; color:#333;">Year: ${data.year}</span>
+                        <small style="color:#666;">DOI: ${data.doi}</small></div>
+                        <button class="action-btn delete-btn" style="background:#dc3545; padding: 5px 10px; width:auto; font-size:12px; margin-top:10px;">❌ Remove</button>
+                    `;
+                    
+                    item.querySelector('.delete-btn').onclick = async (e) => {
+                        e.stopPropagation(); 
+                        await deleteDoc(doc(db, userLibraryPath, docSnap.id));
+                        item.remove();
+                        if(libDiv.children.length === 0) libDiv.innerHTML = "<p style='color:#555; text-align:center; margin-top:30px;'>Your library is empty. Go search and save some papers! 📚</p>";
+                    };
+                    
+                    libDiv.appendChild(item);
+                });
+            } catch (e) { 
+                libDiv.innerHTML = `<p style='color:red; font-weight:bold;'>Error Loading Library. Please refresh the page.</p>`; 
+                console.error("Firebase Fetch Error:", e);
+            }
+        }
     </script>
 </body>
 </html>
